@@ -1,3 +1,8 @@
-baseurl = "http://replace-this-with-your-hugo-site.com/"
+baseurl = "http://code.rosborough.ca/"
 languageCode = "en-us"
-title = "My New Hugo Site"
+title = "Dave Rosborough"
+theme = "hyde"
+
+[params]
+  description = "Ruby on Rails, jQuery, Objective-C, and other tips and tricks."
+  copyright = "Copyright © 2015 Dave Rosborough.  All Rights Reserved."
