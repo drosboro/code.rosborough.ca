@@ -5,6 +5,7 @@ title = "Setting up backups with duplicity"
 +++
 
 There are a myriad of ways to get backups of your Linux box.  There's [tar](https://www.gnu.org/software/tar/), there's [rsync](http://rsync.samba.org), there's even good old [dd](http://en.wikipedia.org/wiki/Dd_(Unix)) if you like that sort of thing.  I personally like [duplicity](http://duplicity.nongnu.org), for a couple of reasons:
+<!--more-->
 
 * It does a great job of keeping track of multiple "chains" of full/incremental backups
 * It uses rsync "under the hood", so it's rock-solid and efficient.

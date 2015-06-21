@@ -4,6 +4,7 @@ title = "DNS server monitoring with dnstop"
 +++
 
 I was recently decommissioning a DNS server (running PowerDNS), and was temporarily "stumped" trying to figure out if I was still seeing traffic to the server.  With a web server, I simply `tail -f /var/log/_my_webserver_access_.log` and watch to see who's still accessing the server.  However, I had minimal logging set up for PowerDNS, and I didn't really feel like wading through config files to set up a bunch of logging for a server I was about to kill anyways.
+<!--more-->
 
 Happily, I found `dnstop`.  (That's "DNS-top", not "DN-stop", by the way!)  On a Debian/Ubuntu server, it's installed simply by:
 

@@ -59,7 +59,8 @@
 
     <span class="post-date">Sun, Apr 12, 2015</span>
 
-    As the number of virtual servers I&rsquo;ve run has increased, it has become an increasing nuisance to log into each and run a sudo aptitude full-upgrade on each of them. I use [apticron] to email me every time an update is available for each of my servers, and 99% of the time I am good to just full-upgrade them. I use my ~/.ssh/config file to keep aliases to all of my servers, including port numbers, user names, etc., so it is usually simply a matter of typing ssh server1 to connect to a server.
+    <p>As the number of virtual servers I&rsquo;ve run has increased, it has become an increasing nuisance to log into each and run a <code>sudo aptitude full-upgrade</code> on each of them.  I use [apticron] to email me every time an update is available for each of my servers, and 99% of the time I am good to just <code>full-upgrade</code> them.</p>
+
 
     
       <p class="read-more-link">
@@ -77,7 +78,8 @@
 
     <span class="post-date">Wed, Mar 19, 2014</span>
 
-    There are a myriad of ways to get backups of your Linux box. There&rsquo;s tar, there&rsquo;s rsync, there&rsquo;s even good old dd) if you like that sort of thing. I personally like duplicity, for a couple of reasons: It does a great job of keeping track of multiple &ldquo;chains&rdquo; of full/incremental backups It uses rsync &ldquo;under the hood&rdquo;, so it&rsquo;s rock-solid and efficient. Although I tend not to use it, you can encrypt your backups with GnuPG.
+    <p>There are a myriad of ways to get backups of your Linux box.  There&rsquo;s <a href="https://www.gnu.org/software/tar/">tar</a>, there&rsquo;s <a href="http://rsync.samba.org">rsync</a>, there&rsquo;s even good old <a href="http://en.wikipedia.org/wiki/Dd_(Unix">dd</a>) if you like that sort of thing.  I personally like <a href="http://duplicity.nongnu.org">duplicity</a>, for a couple of reasons:</p>
+
 
     
       <p class="read-more-link">
@@ -95,7 +97,8 @@
 
     <span class="post-date">Wed, Mar 19, 2014</span>
 
-    I was recently decommissioning a DNS server (running PowerDNS), and was temporarily &ldquo;stumped&rdquo; trying to figure out if I was still seeing traffic to the server. With a web server, I simply tail -f /var/log/_my_webserver_access_.log and watch to see who&rsquo;s still accessing the server. However, I had minimal logging set up for PowerDNS, and I didn&rsquo;t really feel like wading through config files to set up a bunch of logging for a server I was about to kill anyways.
+    <p>I was recently decommissioning a DNS server (running PowerDNS), and was temporarily &ldquo;stumped&rdquo; trying to figure out if I was still seeing traffic to the server.  With a web server, I simply <code>tail -f /var/log/_my_webserver_access_.log</code> and watch to see who&rsquo;s still accessing the server.  However, I had minimal logging set up for PowerDNS, and I didn&rsquo;t really feel like wading through config files to set up a bunch of logging for a server I was about to kill anyways.</p>
+
 
     
       <p class="read-more-link">

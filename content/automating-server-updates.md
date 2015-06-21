@@ -4,6 +4,7 @@ title = "Automating server updates"
 +++
 
 As the number of virtual servers I've run has increased, it has become an increasing nuisance to log into each and run a `sudo aptitude full-upgrade` on each of them.  I use [apticron] to email me every time an update is available for each of my servers, and 99% of the time I am good to just `full-upgrade` them.
+<!--more-->
 
 I use my `~/.ssh/config` file to keep aliases to all of my servers, including port numbers, user names, etc., so it is usually simply a matter of typing `ssh server1` to connect to a server.  This means that it's dead-simple to write a shell script to log into a list of servers, one at a time, and run `sudo aptitude full-upgrade` on them.
 
