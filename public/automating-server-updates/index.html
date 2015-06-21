@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title> Automating server updates &middot; Dave Rosborough </title>
+
+  
+  <link rel="stylesheet" href="http://code.rosborough.ca//css/poole.css">
+  <link rel="stylesheet" href="http://code.rosborough.ca//css/syntax.css">
+  <link rel="stylesheet" href="http://code.rosborough.ca//css/hyde.css">
+  <link rel="stylesheet" href="http://code.rosborough.ca//css/main.css">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+
+  
+  <link href="" rel="alternate" type="application/rss+xml" title="Dave Rosborough" />
+</head>
+
+<body>
+
+<div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1>Dave Rosborough</h1>
+      <p class="lead">
+       Ruby on Rails, jQuery, Objective-C, and other tips and tricks. 
+      </p>
+    </div>
+
+    <ul class="sidebar-nav">
+      <li><a href="/">Home</a> </li>
+      
+    </ul>
+
+    <p id="copyright">Copyright © 2015 Dave Rosborough.  All Rights Reserved.</p>
+  </div>
+</div>
+
+
+    <div class="content container">
+<div class="post">
+  <h1>Automating server updates</h1>
+  <span class="post-date">Sun, Apr 12, 2015</span>
+      <p>As the number of virtual servers I&rsquo;ve run has increased, it has become an increasing nuisance to log into each and run a <code>sudo aptitude full-upgrade</code> on each of them.  I use [apticron] to email me every time an update is available for each of my servers, and 99% of the time I am good to just <code>full-upgrade</code> them.</p>
+
+<p>I use my <code>~/.ssh/config</code> file to keep aliases to all of my servers, including port numbers, user names, etc., so it is usually simply a matter of typing <code>ssh server1</code> to connect to a server.  This means that it&rsquo;s dead-simple to write a shell script to log into a list of servers, one at a time, and run <code>sudo aptitude full-upgrade</code> on them.</p>
+
+<p>Here&rsquo;s my script - complete with nice colored headers for each server:</p>
+
+<pre><code>#!/bin/bash
+
+servers=(server1 server2 server3 server4)
+
+textreset=$(tput sgr0)
+green=$(tput setaf 2)
+bold=$(tput bold)
+
+for s in ${servers[@]}; do
+    echo -e &quot;\n${green}${bold}Updating  $s\n=========================\n${textreset}&quot;
+    ssh $s &quot;sudo aptitude full-upgrade&quot;
+done
+exit 0
+</code></pre>
+
+<p>I simply save the script somewhere in my path (for me, I saved it to <code>~/bin/up</code>, because I&rsquo;ve added that to my user&rsquo;s path), and <code>chmod +x ~/bin/up</code> to make it executable.</p>
+
+<p>Now, I just type <code>up</code> from the command line, and all my servers update automatically.</p>
+
+<p><strong>NOTE</strong>: The clever among you will point out that this will still require some user intervention (hitting &lsquo;Y&rsquo; if there&rsquo;s packages to update).  That&rsquo;s the way I wanted it.  If you want it to &ldquo;assume yes&rdquo;, simply add it to the command:</p>
+
+<pre><code>ssh $s &quot;sudo aptitude -y full-upgrade&quot;
+</code></pre>
+
+<p>[apticron]:(<a href="https://www.debian-administration.org/article/491/Automatic_package_update_nagging_with_apticron">https://www.debian-administration.org/article/491/Automatic_package_update_nagging_with_apticron</a>)</p>
+
+</div>
+</div>
+
+  </body>
+</html>

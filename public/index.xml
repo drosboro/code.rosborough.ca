@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Dave Rosborough</title>
+    <link>http://code.rosborough.ca/</link>
+    <description>Recent content on Dave Rosborough</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 12 Apr 2015 21:32:18 -0700</lastBuildDate>
+    <atom:link href="http://code.rosborough.ca/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Automating server updates</title>
+      <link>http://code.rosborough.ca/automating-server-updates/</link>
+      <pubDate>Sun, 12 Apr 2015 21:32:18 -0700</pubDate>
+      
+      <guid>http://code.rosborough.ca/automating-server-updates/</guid>
+      <description>&lt;p&gt;As the number of virtual servers I&amp;rsquo;ve run has increased, it has become an increasing nuisance to log into each and run a &lt;code&gt;sudo aptitude full-upgrade&lt;/code&gt; on each of them.  I use [apticron] to email me every time an update is available for each of my servers, and 99% of the time I am good to just &lt;code&gt;full-upgrade&lt;/code&gt; them.&lt;/p&gt;
+
+&lt;p&gt;I use my &lt;code&gt;~/.ssh/config&lt;/code&gt; file to keep aliases to all of my servers, including port numbers, user names, etc., so it is usually simply a matter of typing &lt;code&gt;ssh server1&lt;/code&gt; to connect to a server.  This means that it&amp;rsquo;s dead-simple to write a shell script to log into a list of servers, one at a time, and run &lt;code&gt;sudo aptitude full-upgrade&lt;/code&gt; on them.&lt;/p&gt;
+
+&lt;p&gt;Here&amp;rsquo;s my script - complete with nice colored headers for each server:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#!/bin/bash
+
+servers=(server1 server2 server3 server4)
+
+textreset=$(tput sgr0)
+green=$(tput setaf 2)
+bold=$(tput bold)
+
+for s in ${servers[@]}; do
+    echo -e &amp;quot;\n${green}${bold}Updating  $s\n=========================\n${textreset}&amp;quot;
+    ssh $s &amp;quot;sudo aptitude full-upgrade&amp;quot;
+done
+exit 0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;I simply save the script somewhere in my path (for me, I saved it to &lt;code&gt;~/bin/up&lt;/code&gt;, because I&amp;rsquo;ve added that to my user&amp;rsquo;s path), and &lt;code&gt;chmod +x ~/bin/up&lt;/code&gt; to make it executable.&lt;/p&gt;
+
+&lt;p&gt;Now, I just type &lt;code&gt;up&lt;/code&gt; from the command line, and all my servers update automatically.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt;: The clever among you will point out that this will still require some user intervention (hitting &amp;lsquo;Y&amp;rsquo; if there&amp;rsquo;s packages to update).  That&amp;rsquo;s the way I wanted it.  If you want it to &amp;ldquo;assume yes&amp;rdquo;, simply add it to the command:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ssh $s &amp;quot;sudo aptitude -y full-upgrade&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;[apticron]:(&lt;a href=&#34;https://www.debian-administration.org/article/491/Automatic_package_update_nagging_with_apticron&#34;&gt;https://www.debian-administration.org/article/491/Automatic_package_update_nagging_with_apticron&lt;/a&gt;)&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Setting up backups with duplicity</title>
+      <link>http://code.rosborough.ca/setting-up-backups-with-duplicity/</link>
+      <pubDate>Wed, 19 Mar 2014 23:05:25 -0700</pubDate>
+      
+      <guid>http://code.rosborough.ca/setting-up-backups-with-duplicity/</guid>
+      <description>
+
+&lt;p&gt;There are a myriad of ways to get backups of your Linux box.  There&amp;rsquo;s &lt;a href=&#34;https://www.gnu.org/software/tar/&#34;&gt;tar&lt;/a&gt;, there&amp;rsquo;s &lt;a href=&#34;http://rsync.samba.org&#34;&gt;rsync&lt;/a&gt;, there&amp;rsquo;s even good old &lt;a href=&#34;http://en.wikipedia.org/wiki/Dd_(Unix&#34;&gt;dd&lt;/a&gt;) if you like that sort of thing.  I personally like &lt;a href=&#34;http://duplicity.nongnu.org&#34;&gt;duplicity&lt;/a&gt;, for a couple of reasons:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;It does a great job of keeping track of multiple &amp;ldquo;chains&amp;rdquo; of full/incremental backups&lt;/li&gt;
+&lt;li&gt;It uses rsync &amp;ldquo;under the hood&amp;rdquo;, so it&amp;rsquo;s rock-solid and efficient.&lt;/li&gt;
+&lt;li&gt;Although I tend not to use it, you can encrypt your backups with &lt;a href=&#34;http://www.gnupg.org&#34;&gt;GnuPG&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This is one of the few packages that I generally build from source on my Debian servers, as I prefer to use a later version than can be found in the Debian repositories.  This post describes how I go about setting up backups for my servers.&lt;/p&gt;
+
+&lt;h2 id=&#34;installing-duplicity:047d7c226830b343633f4b79238a8108&#34;&gt;Installing Duplicity&lt;/h2&gt;
+
+&lt;p&gt;First, install the prerequisites:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo apt-get install python-dev librsync-dev python-paramiko python-lockfile
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This works for me, as I&amp;rsquo;m tunneling rsync over SSH to another server.  If you were planning to use Amazon S3, you will need to install &lt;code&gt;python-boto&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Then, download the source for duplicity.  At the time of writing, 0.6.23 is the latest stable version:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;mkdir ~/src
+cd ~/src
+wget http://code.launchpad.net/duplicity/0.6-series/0.6.23/+download/duplicity-0.6.23.tar.gz
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Building and installing duplicity is as simple as:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo python setup.py install
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;connecting-to-the-backup-server-via-ssh:047d7c226830b343633f4b79238a8108&#34;&gt;Connecting to the Backup Server via SSH&lt;/h2&gt;
+
+&lt;p&gt;On your main server (where you just installed duplicity), you&amp;rsquo;ll create an SSH key to use for connecting to the backup server:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo -s
+ssh-keygen -t rsa
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Leave the password blank, so that you can make the connection unattended (say, in a cron job).&lt;/p&gt;
+
+&lt;p&gt;Copy your public key:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;cat ~/.ssh/id_rsa.pub
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Log into your backup server, and set up the key - in this example, I&amp;rsquo;ll use the user &amp;ldquo;bob&amp;rdquo; as the backup user.  If you don&amp;rsquo;t already have key-based authentication set up on the backup server, you&amp;rsquo;ll do the following:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ssh bob@backup.server.com
+mkdir ~/.ssh
+cat &amp;gt; ~/.ssh/authorized_keys
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&amp;hellip; and paste in the public key you copied from the other server.  Type &lt;code&gt;ctrl-D&lt;/code&gt; on a blank line to exit &lt;code&gt;cat&lt;/code&gt;.  If you&amp;rsquo;ve already got an &lt;code&gt;authorized_keys&lt;/code&gt; file, you will instead want to:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;chmod +w ~/.ssh/authorized_keys
+cat &amp;gt;&amp;gt; ~/.ssh/authorized_keys
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&amp;hellip; so as not to overwrite any existing keys.  I generally &lt;code&gt;chmod 400 ~/.ssh/authorized_keys&lt;/code&gt; to keep everything nice and &amp;ldquo;tight&amp;rdquo;.&lt;/p&gt;
+
+&lt;p&gt;To test your connection, log into your main server, and try the following:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo -s
+ssh bob@backup.server.com
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You should be able to connect without a password.&lt;/p&gt;
+
+&lt;h2 id=&#34;configuring-duplicity-backups:047d7c226830b343633f4b79238a8108&#34;&gt;Configuring Duplicity backups&lt;/h2&gt;
+
+&lt;p&gt;Last but not least, you&amp;rsquo;ll need to decide on a backup policy.  For my purposes, I settled on:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;weekly full backups&lt;/li&gt;
+&lt;li&gt;daily incremental backups&lt;/li&gt;
+&lt;li&gt;retain backups for 1 month&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Duplicity makes it very straightforward to create a policy like this.  I create a simple bash script like so:
+&lt;code&gt;sudo vim /etc/cron.daily/file-system-backup&lt;/code&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;test -x $(which duplicity) || exit 0
+
+$(which duplicity) --no-encryption --full-if-older-than 1W --exclude /dev --exclude **/lost+found --exclude /media --exclude /mnt --exclude /proc --exclude /sys --exclude /tmp --exclude /root/.cache --exclude /var/lib/mysql --exclude /var/lib/postgresql --exclude /var/cache / scp://bob@backup.server.com//home/bob/$(hostname)
+
+$(which duplicity) --no-encryption remove-older-than 1M --force scp://bob@backup.server.com//home/bob/$(hostname)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The first line checks to ensure that it can find duplicity (since I often copy and paste this script to new servers, it&amp;rsquo;s worth checking!).&lt;/p&gt;
+
+&lt;p&gt;The second line does all the work.  &lt;code&gt;--no-encryption&lt;/code&gt; turns off GnuPG.  &lt;code&gt;--full-if-older-than 1W&lt;/code&gt; does what it sounds like.  Then I &lt;code&gt;--exclude&lt;/code&gt; a whole bunch of directories, like &lt;code&gt;/dev&lt;/code&gt;, &lt;code&gt;/mnt&lt;/code&gt;, &lt;code&gt;/proc&lt;/code&gt; and so on.&lt;/p&gt;
+
+&lt;p&gt;Note that I also exclude database directories for &lt;a href=&#34;https://mariadb.org&#34;&gt;mysql&lt;/a&gt; and &lt;a href=&#34;http://www.postgresql.org&#34;&gt;postgresql&lt;/a&gt;.  Generally speaking, databases don&amp;rsquo;t backup well via the filesystem unless they&amp;rsquo;re shut down first.  Since duplicity is going to take a while, I&amp;rsquo;m not willing to leave the database servers down while I back up the rest of the filesystem.  The good news - there&amp;rsquo;s great ways to back up these databases, including &lt;a href=&#34;http://www.percona.com/doc/percona-xtrabackup/2.1/&#34;&gt;xtrabackup&lt;/a&gt; for mysql, and &lt;a href=&#34;http://www.pgbarman.org&#34;&gt;barman&lt;/a&gt; for postgresql.  Those are topics for another article.&lt;/p&gt;
+
+&lt;p&gt;The final line cleans up any backups older than 1 month.&lt;/p&gt;
+
+&lt;p&gt;The backups will be found on the backup server, at &lt;code&gt;/home/bob/main.server.com&lt;/code&gt;, if &lt;code&gt;main.server.com&lt;/code&gt; were your server&amp;rsquo;s hostname.&lt;/p&gt;
+
+&lt;p&gt;That wasn&amp;rsquo;t too bad, now, was it?&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>DNS server monitoring with dnstop</title>
+      <link>http://code.rosborough.ca/dns-server-monitoring-with-dnstop/</link>
+      <pubDate>Wed, 19 Mar 2014 11:28:36 -0700</pubDate>
+      
+      <guid>http://code.rosborough.ca/dns-server-monitoring-with-dnstop/</guid>
+      <description>&lt;p&gt;I was recently decommissioning a DNS server (running PowerDNS), and was temporarily &amp;ldquo;stumped&amp;rdquo; trying to figure out if I was still seeing traffic to the server.  With a web server, I simply &lt;code&gt;tail -f /var/log/_my_webserver_access_.log&lt;/code&gt; and watch to see who&amp;rsquo;s still accessing the server.  However, I had minimal logging set up for PowerDNS, and I didn&amp;rsquo;t really feel like wading through config files to set up a bunch of logging for a server I was about to kill anyways.&lt;/p&gt;
+
+&lt;p&gt;Happily, I found &lt;code&gt;dnstop&lt;/code&gt;.  (That&amp;rsquo;s &amp;ldquo;DNS-top&amp;rdquo;, not &amp;ldquo;DN-stop&amp;rdquo;, by the way!)  On a Debian/Ubuntu server, it&amp;rsquo;s installed simply by:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo apt-get install dnstop
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On CentOS or other yum-my systems:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo yum install dnstop
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You&amp;rsquo;ll need to figure out which network interface to listen to.  Simply run &lt;code&gt;ifconfig&lt;/code&gt; or &lt;code&gt;sudo ifconfig&lt;/code&gt; and look for the name of the interface that has your public IP address listed.  On my VPSs, it&amp;rsquo;s usually &lt;code&gt;eth0&lt;/code&gt; or &lt;code&gt;venet0:0&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Once you know the name of the relevant interface, run dnstop as root:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo dnstop venet0:0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;While you sit there and watch, dnstop will start gathering any DNS requests made via the specified interface.  This will include incoming and outgoing requests.  The default view shows the source IP address of the request, so it&amp;rsquo;s easy to see which ones are outgoing (ie, the source is the server&amp;rsquo;s IP address) and incoming (all the others).&lt;/p&gt;
+
+&lt;p&gt;You can also change the view.  Typing &lt;code&gt;?&lt;/code&gt; will bring up the list of available views.  I&amp;rsquo;ve reproduced some of the more useful ones here:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;s - Sources list
+d - Destinations list
+t - Query types
+o - Opcodes
+r - Return codes
+1 - 1st level Query Names (TLDs)
+2 - 2nd level Query Names
+^R - Reset counters
+^X - Exit
+
+? - help
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This turns out to be a super-simple and useful way to tell what DNS traffic is coming into and out of your machine.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

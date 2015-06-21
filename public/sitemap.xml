@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <url>
+    <loc>http://code.rosborough.ca/</loc>
+    <lastmod>2015-04-12T21:32:18-07:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://code.rosborough.ca/automating-server-updates/</loc>
+    <lastmod>2015-04-12T21:32:18-07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://code.rosborough.ca/setting-up-backups-with-duplicity/</loc>
+    <lastmod>2014-03-19T23:05:25-07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://code.rosborough.ca/dns-server-monitoring-with-dnstop/</loc>
+    <lastmod>2014-03-19T11:28:36-07:00</lastmod>
+  </url>
+  
+</urlset>
