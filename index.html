@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title> Dave Rosborough &middot; Dave Rosborough </title>
+
+  
+  <link rel="stylesheet" href="http://code.rosborough.ca//css/poole.css">
+  <link rel="stylesheet" href="http://code.rosborough.ca//css/syntax.css">
+  <link rel="stylesheet" href="http://code.rosborough.ca//css/hyde.css">
+  <link rel="stylesheet" href="http://code.rosborough.ca//css/main.css">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+
+  
+  <link href="http://code.rosborough.ca/index.xml" rel="alternate" type="application/rss+xml" title="Dave Rosborough" />
+</head>
+
+<body>
+
+<div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1>Dave Rosborough</h1>
+      <p class="lead">
+       Ruby on Rails, jQuery, Objective-C, and other tips and tricks. 
+      </p>
+    </div>
+
+    <ul class="sidebar-nav">
+      <li><a href="/">Home</a> </li>
+      
+    </ul>
+
+    <p id="copyright">Copyright © 2015 Dave Rosborough.  All Rights Reserved.</p>
+  </div>
+</div>
+
+
+    <div class="content container">
+<div class="posts">
+
+      
+  <div class="post">
+    <h1 class="post-title">
+      <a href="http://code.rosborough.ca/automating-server-updates/">
+        Automating server updates
+      </a>
+    </h1>
+
+    <span class="post-date">Sun, Apr 12, 2015</span>
+
+    As the number of virtual servers I&rsquo;ve run has increased, it has become an increasing nuisance to log into each and run a sudo aptitude full-upgrade on each of them. I use [apticron] to email me every time an update is available for each of my servers, and 99% of the time I am good to just full-upgrade them. I use my ~/.ssh/config file to keep aliases to all of my servers, including port numbers, user names, etc., so it is usually simply a matter of typing ssh server1 to connect to a server.
+
+    
+      <p class="read-more-link">
+        <a href="/automating-server-updates/">Read More…</a>
+      </p>
+    
+  </div>
+  
+  <div class="post">
+    <h1 class="post-title">
+      <a href="http://code.rosborough.ca/setting-up-backups-with-duplicity/">
+        Setting up backups with duplicity
+      </a>
+    </h1>
+
+    <span class="post-date">Wed, Mar 19, 2014</span>
+
+    There are a myriad of ways to get backups of your Linux box. There&rsquo;s tar, there&rsquo;s rsync, there&rsquo;s even good old dd) if you like that sort of thing. I personally like duplicity, for a couple of reasons: It does a great job of keeping track of multiple &ldquo;chains&rdquo; of full/incremental backups It uses rsync &ldquo;under the hood&rdquo;, so it&rsquo;s rock-solid and efficient. Although I tend not to use it, you can encrypt your backups with GnuPG.
+
+    
+      <p class="read-more-link">
+        <a href="/setting-up-backups-with-duplicity/">Read More…</a>
+      </p>
+    
+  </div>
+  
+  <div class="post">
+    <h1 class="post-title">
+      <a href="http://code.rosborough.ca/dns-server-monitoring-with-dnstop/">
+        DNS server monitoring with dnstop
+      </a>
+    </h1>
+
+    <span class="post-date">Wed, Mar 19, 2014</span>
+
+    I was recently decommissioning a DNS server (running PowerDNS), and was temporarily &ldquo;stumped&rdquo; trying to figure out if I was still seeing traffic to the server. With a web server, I simply tail -f /var/log/_my_webserver_access_.log and watch to see who&rsquo;s still accessing the server. However, I had minimal logging set up for PowerDNS, and I didn&rsquo;t really feel like wading through config files to set up a bunch of logging for a server I was about to kill anyways.
+
+    
+      <p class="read-more-link">
+        <a href="/dns-server-monitoring-with-dnstop/">Read More…</a>
+      </p>
+    
+  </div>
+  
+</div>
+</div>
+
+  </body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title> Setting up backups with duplicity &middot; Dave Rosborough </title>
+
+  
+  <link rel="stylesheet" href="http://code.rosborough.ca//css/poole.css">
+  <link rel="stylesheet" href="http://code.rosborough.ca//css/syntax.css">
+  <link rel="stylesheet" href="http://code.rosborough.ca//css/hyde.css">
+  <link rel="stylesheet" href="http://code.rosborough.ca//css/main.css">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+
+  
+  <link href="" rel="alternate" type="application/rss+xml" title="Dave Rosborough" />
+</head>
+
+<body>
+
+<div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1>Dave Rosborough</h1>
+      <p class="lead">
+       Ruby on Rails, jQuery, Objective-C, and other tips and tricks. 
+      </p>
+    </div>
+
+    <ul class="sidebar-nav">
+      <li><a href="/">Home</a> </li>
+      
+    </ul>
+
+    <p id="copyright">Copyright © 2015 Dave Rosborough.  All Rights Reserved.</p>
+  </div>
+</div>
+
+
+    <div class="content container">
+<div class="post">
+  <h1>Setting up backups with duplicity</h1>
+  <span class="post-date">Wed, Mar 19, 2014</span>
+      
+
+<p>There are a myriad of ways to get backups of your Linux box.  There&rsquo;s <a href="https://www.gnu.org/software/tar/">tar</a>, there&rsquo;s <a href="http://rsync.samba.org">rsync</a>, there&rsquo;s even good old <a href="http://en.wikipedia.org/wiki/Dd_(Unix">dd</a>) if you like that sort of thing.  I personally like <a href="http://duplicity.nongnu.org">duplicity</a>, for a couple of reasons:</p>
+
+<ul>
+<li>It does a great job of keeping track of multiple &ldquo;chains&rdquo; of full/incremental backups</li>
+<li>It uses rsync &ldquo;under the hood&rdquo;, so it&rsquo;s rock-solid and efficient.</li>
+<li>Although I tend not to use it, you can encrypt your backups with <a href="http://www.gnupg.org">GnuPG</a>.</li>
+</ul>
+
+<p>This is one of the few packages that I generally build from source on my Debian servers, as I prefer to use a later version than can be found in the Debian repositories.  This post describes how I go about setting up backups for my servers.</p>
+
+<h2 id="installing-duplicity:047d7c226830b343633f4b79238a8108">Installing Duplicity</h2>
+
+<p>First, install the prerequisites:</p>
+
+<pre><code>sudo apt-get install python-dev librsync-dev python-paramiko python-lockfile
+</code></pre>
+
+<p>This works for me, as I&rsquo;m tunneling rsync over SSH to another server.  If you were planning to use Amazon S3, you will need to install <code>python-boto</code>.</p>
+
+<p>Then, download the source for duplicity.  At the time of writing, 0.6.23 is the latest stable version:</p>
+
+<pre><code>mkdir ~/src
+cd ~/src
+wget http://code.launchpad.net/duplicity/0.6-series/0.6.23/+download/duplicity-0.6.23.tar.gz
+</code></pre>
+
+<p>Building and installing duplicity is as simple as:</p>
+
+<pre><code>sudo python setup.py install
+</code></pre>
+
+<h2 id="connecting-to-the-backup-server-via-ssh:047d7c226830b343633f4b79238a8108">Connecting to the Backup Server via SSH</h2>
+
+<p>On your main server (where you just installed duplicity), you&rsquo;ll create an SSH key to use for connecting to the backup server:</p>
+
+<pre><code>sudo -s
+ssh-keygen -t rsa
+</code></pre>
+
+<p>Leave the password blank, so that you can make the connection unattended (say, in a cron job).</p>
+
+<p>Copy your public key:</p>
+
+<pre><code>cat ~/.ssh/id_rsa.pub
+</code></pre>
+
+<p>Log into your backup server, and set up the key - in this example, I&rsquo;ll use the user &ldquo;bob&rdquo; as the backup user.  If you don&rsquo;t already have key-based authentication set up on the backup server, you&rsquo;ll do the following:</p>
+
+<pre><code>ssh bob@backup.server.com
+mkdir ~/.ssh
+cat &gt; ~/.ssh/authorized_keys
+</code></pre>
+
+<p>&hellip; and paste in the public key you copied from the other server.  Type <code>ctrl-D</code> on a blank line to exit <code>cat</code>.  If you&rsquo;ve already got an <code>authorized_keys</code> file, you will instead want to:</p>
+
+<pre><code>chmod +w ~/.ssh/authorized_keys
+cat &gt;&gt; ~/.ssh/authorized_keys
+</code></pre>
+
+<p>&hellip; so as not to overwrite any existing keys.  I generally <code>chmod 400 ~/.ssh/authorized_keys</code> to keep everything nice and &ldquo;tight&rdquo;.</p>
+
+<p>To test your connection, log into your main server, and try the following:</p>
+
+<pre><code>sudo -s
+ssh bob@backup.server.com
+</code></pre>
+
+<p>You should be able to connect without a password.</p>
+
+<h2 id="configuring-duplicity-backups:047d7c226830b343633f4b79238a8108">Configuring Duplicity backups</h2>
+
+<p>Last but not least, you&rsquo;ll need to decide on a backup policy.  For my purposes, I settled on:</p>
+
+<ul>
+<li>weekly full backups</li>
+<li>daily incremental backups</li>
+<li>retain backups for 1 month</li>
+</ul>
+
+<p>Duplicity makes it very straightforward to create a policy like this.  I create a simple bash script like so:
+<code>sudo vim /etc/cron.daily/file-system-backup</code></p>
+
+<pre><code>test -x $(which duplicity) || exit 0
+
+$(which duplicity) --no-encryption --full-if-older-than 1W --exclude /dev --exclude **/lost+found --exclude /media --exclude /mnt --exclude /proc --exclude /sys --exclude /tmp --exclude /root/.cache --exclude /var/lib/mysql --exclude /var/lib/postgresql --exclude /var/cache / scp://bob@backup.server.com//home/bob/$(hostname)
+
+$(which duplicity) --no-encryption remove-older-than 1M --force scp://bob@backup.server.com//home/bob/$(hostname)
+</code></pre>
+
+<p>The first line checks to ensure that it can find duplicity (since I often copy and paste this script to new servers, it&rsquo;s worth checking!).</p>
+
+<p>The second line does all the work.  <code>--no-encryption</code> turns off GnuPG.  <code>--full-if-older-than 1W</code> does what it sounds like.  Then I <code>--exclude</code> a whole bunch of directories, like <code>/dev</code>, <code>/mnt</code>, <code>/proc</code> and so on.</p>
+
+<p>Note that I also exclude database directories for <a href="https://mariadb.org">mysql</a> and <a href="http://www.postgresql.org">postgresql</a>.  Generally speaking, databases don&rsquo;t backup well via the filesystem unless they&rsquo;re shut down first.  Since duplicity is going to take a while, I&rsquo;m not willing to leave the database servers down while I back up the rest of the filesystem.  The good news - there&rsquo;s great ways to back up these databases, including <a href="http://www.percona.com/doc/percona-xtrabackup/2.1/">xtrabackup</a> for mysql, and <a href="http://www.pgbarman.org">barman</a> for postgresql.  Those are topics for another article.</p>
+
+<p>The final line cleans up any backups older than 1 month.</p>
+
+<p>The backups will be found on the backup server, at <code>/home/bob/main.server.com</code>, if <code>main.server.com</code> were your server&rsquo;s hostname.</p>
+
+<p>That wasn&rsquo;t too bad, now, was it?</p>
+
+</div>
+</div>
+
+  </body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title> DNS server monitoring with dnstop &middot; Dave Rosborough </title>
+
+  
+  <link rel="stylesheet" href="http://code.rosborough.ca//css/poole.css">
+  <link rel="stylesheet" href="http://code.rosborough.ca//css/syntax.css">
+  <link rel="stylesheet" href="http://code.rosborough.ca//css/hyde.css">
+  <link rel="stylesheet" href="http://code.rosborough.ca//css/main.css">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+
+  
+  <link href="" rel="alternate" type="application/rss+xml" title="Dave Rosborough" />
+</head>
+
+<body>
+
+<div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1>Dave Rosborough</h1>
+      <p class="lead">
+       Ruby on Rails, jQuery, Objective-C, and other tips and tricks. 
+      </p>
+    </div>
+
+    <ul class="sidebar-nav">
+      <li><a href="/">Home</a> </li>
+      
+    </ul>
+
+    <p id="copyright">Copyright © 2015 Dave Rosborough.  All Rights Reserved.</p>
+  </div>
+</div>
+
+
+    <div class="content container">
+<div class="post">
+  <h1>DNS server monitoring with dnstop</h1>
+  <span class="post-date">Wed, Mar 19, 2014</span>
+      <p>I was recently decommissioning a DNS server (running PowerDNS), and was temporarily &ldquo;stumped&rdquo; trying to figure out if I was still seeing traffic to the server.  With a web server, I simply <code>tail -f /var/log/_my_webserver_access_.log</code> and watch to see who&rsquo;s still accessing the server.  However, I had minimal logging set up for PowerDNS, and I didn&rsquo;t really feel like wading through config files to set up a bunch of logging for a server I was about to kill anyways.</p>
+
+<p>Happily, I found <code>dnstop</code>.  (That&rsquo;s &ldquo;DNS-top&rdquo;, not &ldquo;DN-stop&rdquo;, by the way!)  On a Debian/Ubuntu server, it&rsquo;s installed simply by:</p>
+
+<pre><code>sudo apt-get install dnstop
+</code></pre>
+
+<p>On CentOS or other yum-my systems:</p>
+
+<pre><code>sudo yum install dnstop
+</code></pre>
+
+<p>You&rsquo;ll need to figure out which network interface to listen to.  Simply run <code>ifconfig</code> or <code>sudo ifconfig</code> and look for the name of the interface that has your public IP address listed.  On my VPSs, it&rsquo;s usually <code>eth0</code> or <code>venet0:0</code>.</p>
+
+<p>Once you know the name of the relevant interface, run dnstop as root:</p>
+
+<pre><code>sudo dnstop venet0:0
+</code></pre>
+
+<p>While you sit there and watch, dnstop will start gathering any DNS requests made via the specified interface.  This will include incoming and outgoing requests.  The default view shows the source IP address of the request, so it&rsquo;s easy to see which ones are outgoing (ie, the source is the server&rsquo;s IP address) and incoming (all the others).</p>
+
+<p>You can also change the view.  Typing <code>?</code> will bring up the list of available views.  I&rsquo;ve reproduced some of the more useful ones here:</p>
+
+<pre><code>s - Sources list
+d - Destinations list
+t - Query types
+o - Opcodes
+r - Return codes
+1 - 1st level Query Names (TLDs)
+2 - 2nd level Query Names
+^R - Reset counters
+^X - Exit
+
+? - help
+</code></pre>
+
+<p>This turns out to be a super-simple and useful way to tell what DNS traffic is coming into and out of your machine.</p>
+
+</div>
+</div>
+
+  </body>
+</html>
